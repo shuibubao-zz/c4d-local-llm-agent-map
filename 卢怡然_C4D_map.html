@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <title>SIAS University 交互式地图 - 卢怡然 C4D</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-fullscreen@1.0.2/dist/leaflet.fullscreen.css"/>
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; }
+        #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
+        .leaflet-popup-content { font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif; }
+        .leaflet-popup-content h3 { color: #1890ff; margin: 0 0 5px 0; font-size: 16px; }
+        .leaflet-popup-content h4 { color: #333; margin: 0 0 8px 0; font-size: 14px; }
+        .leaflet-popup-content p { margin: 4px 0; font-size: 12px; }
+        .leaflet-popup-content hr { border: 0; border-top: 1px solid #eee; margin: 8px 0; }
+        .info-bar {
+            position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+            background: rgba(255,255,255,0.9); padding: 5px 15px; border-radius: 5px;
+            font-size: 12px; color: #666; z-index: 9999; font-family: 'Microsoft YaHei', sans-serif;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-fullscreen@1.0.2/dist/Leaflet.fullscreen.min.js"></script>
+    <script>
+    // ============================================================
+    // SIAS University 交互式地图
+    // 地点数据由本地 Gemma 4 E4B Q4_K_M 模型生成
+    // 作者：卢怡然 | C4D 作业
+    // ============================================================
+
+    // 初始化地图，中心定位郑州西亚斯学院
+    var map = L.map('map', {
+        center: [34.4058, 113.7386],
+        zoom: 14,
+        zoomControl: true,
+        attributionControl: true,
+        fullscreenControl: true,
+        fullscreenControlOptions: { position: 'topleft' }
+    });
+
+    // ============================================================
+    // 底图图层（支持切换）
+    // ============================================================
+    var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        name: '标准地图'
+    }).addTo(map);
+
+    var terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png', {
+        attribution: 'Map tiles by Stamen Design',
+        name: '地形图',
+        subdomains: 'a b c d'
+    });
+
+    var tonerLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png', {
+        attribution: 'Map tiles by Stamen Design',
+        name: '黑白图',
+        subdomains: 'a b c d'
+    });
+
+    // 图层控制器
+    L.control.layers({
+        '标准地图': osmLayer,
+        '地形图': terrainLayer,
+        '黑白图': tonerLayer
+    }, null, { position: 'bottomright' }).addTo(map);
+
+    // 比例尺
+    L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map);
+
+    // ============================================================
+    // SIAS University 中心标记点（红色星标）
+    // ============================================================
+    var siasCenter = L.marker([34.4058, 113.7386], {
+        icon: L.divIcon({
+            className: 'custom-div-icon',
+            html: '<div style="font-size: 28px; color: #d4380d;"><i class="fas fa-star"></i></div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+        })
+    }).addTo(map);
+
+    siasCenter.bindPopup(L.popup({ maxWidth: 350 }).setContent(
+        '<div style="min-width: 200px;">' +
+        '<h3 style="color: #d4380d;">SIAS University</h3>' +
+        '<h4 style="color: #d4380d;">郑州西亚斯学院</h4>' +
+        '<p>坐标: 34.4058, 113.7386</p>' +
+        '<p>河南省新郑市，是一所以国际化教育为特色的本科院校。</p>' +
+        '<p style="color: #999; font-size: 12px;">★ 中心定位点</p>' +
+        '</div>'
+    ));
+    siasCenter.bindTooltip('郑州西亚斯学院（中心点）');
+
+    // SIAS 周边区域圆形指示（半径2000米）
+    L.circle([34.4058, 113.7386], {
+        radius: 2000,
+        color: '#1890ff',
+        fillColor: '#1890ff',
+        fillOpacity: 0.05,
+        weight: 2
+    }).addTo(map).bindPopup('SIAS 周边区域 (2km)');
+
+    // ============================================================
+    // 模型生成的地点标记点
+    // 以下数据由本地 Gemma 4 E4B 模型通过 Ollama API 生成
+    // ============================================================
+
+    var locations = [
+        {
+            "name": "SIAS University Main Gate",
+            "name_zh": "西亚斯学院正门",
+            "latitude": 34.4065,
+            "longitude": 113.7382,
+            "description": "郑州西亚斯学院正门入口，是校园的主要出入口，气势恢宏。"
+        },
+        {
+            "name": "SIAS University Library",
+            "name_zh": "西亚斯图书馆",
+            "latitude": 34.4055,
+            "longitude": 113.7395,
+            "description": "学校中心图书馆，藏书丰富，是学生自习和查阅资料的主要场所。"
+        },
+        {
+            "name": "SIAS Sports Center",
+            "name_zh": "西亚斯体育中心",
+            "latitude": 34.4072,
+            "longitude": 113.7408,
+            "description": "校内体育场馆，包含篮球场、田径场等设施，举办各类体育赛事。"
+        },
+        {
+            "name": "SIAS Student Dormitory",
+            "name_zh": "学生公寓区",
+            "latitude": 34.4045,
+            "longitude": 113.7372,
+            "description": "学生宿舍集中区域，生活设施齐全，距离教学区步行约10分钟。"
+        },
+        {
+            "name": "SIAS Cafeteria",
+            "name_zh": "西亚斯食堂",
+            "latitude": 34.4058,
+            "longitude": 113.7388,
+            "description": "校内主食堂，提供多种餐饮选择，覆盖南北风味，价格实惠。"
+        },
+        {
+            "name": "Xinzheng East Bus Station",
+            "name_zh": "新郑东站",
+            "latitude": 34.4120,
+            "longitude": 113.7450,
+            "description": "新郑市东部汽车站，距离西亚斯学院约2公里，可乘坐公交直达。"
+        },
+        {
+            "name": "Xinzheng People's Park",
+            "name_zh": "新郑人民公园",
+            "latitude": 34.3985,
+            "longitude": 113.7330,
+            "description": "新郑市中心城市公园，周末休闲好去处，有湖景和绿化带。"
+        },
+        {
+            "name": "Xinzheng Museum",
+            "name_zh": "新郑博物馆",
+            "latitude": 34.4000,
+            "longitude": 113.7300,
+            "description": "展示新郑历史文化，馆藏丰富，了解当地历史的好地方。"
+        }
+    ];
+
+    // 标记点颜色方案
+    var colors = ['#1890ff', '#52c41a', '#722ed1', '#fa8c16', '#13c2c2', '#eb2f96', '#fa541c', '#5c0011'];
+    var iconClasses = ['fa-building', 'fa-book', 'fa-futbol', 'fa-home', 'fa-utensils', 'fa-bus', 'fa-tree', 'fa-landmark'];
+
+    // 遍历地点列表，添加标记点
+    for (var i = 0; i < locations.length; i++) {
+        var loc = locations[i];
+        var color = colors[i % colors.length];
+        var iconClass = iconClasses[i % iconClasses.length];
+
+        var markerIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: '<div style="' +
+                'background-color: ' + color + ';' +
+                'width: 30px; height: 30px; border-radius: 50% 50% 50% 0;' +
+                'transform: rotate(-45deg);' +
+                'border: 2px solid white;' +
+                'box-shadow: 0 2px 6px rgba(0,0,0,0.3);' +
+                'display: flex; align-items: center; justify-content: center;">' +
+                '<i class="fas ' + iconClass + '" style="color: white; font-size: 12px; transform: rotate(45deg);"></i>' +
+                '</div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 30],
+            popupAnchor: [0, -30]
+        });
+
+        var marker = L.marker([loc.latitude, loc.longitude], { icon: markerIcon }).addTo(map);
+
+        var popupContent =
+            '<div style="min-width: 220px; font-family: Microsoft YaHei, sans-serif;">' +
+            '<h3>' + loc.name + '</h3>' +
+            '<h4>' + loc.name_zh + '</h4>' +
+            '<hr>' +
+            '<p><b>纬度:</b> ' + loc.latitude + '</p>' +
+            '<p><b>经度:</b> ' + loc.longitude + '</p>' +
+            '<p><b>描述:</b> ' + loc.description + '</p>' +
+            '</div>';
+
+        marker.bindPopup(L.popup({ maxWidth: 350 }).setContent(popupContent));
+        marker.bindTooltip(loc.name_zh + ' - 点击查看详情');
+    }
+
+    // ============================================================
+    // 底部信息栏
+    // ============================================================
+    var infoBar = L.control({ position: 'bottomleft' });
+    infoBar.onAdd = function(map) {
+        var div = L.DomUtil.create('div', 'info-bar');
+        div.innerHTML = 'SIAS University 交互式地图 | 数据由本地 Gemma 4 E4B 生成 | 卢怡然 C4D 作业';
+        return div;
+    };
+    infoBar.addTo(map);
+
+    console.log('SIAS University 地图已加载，共 ' + locations.length + ' 个标记点 + 1 个中心点');
+    </script>
+</body>
+</html>
